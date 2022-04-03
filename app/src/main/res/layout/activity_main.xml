@@ -24,7 +24,7 @@
         >
 
         <ImageView
-            android:id="@+id/idVBlack"
+            android:id="@+id/idVBack"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
