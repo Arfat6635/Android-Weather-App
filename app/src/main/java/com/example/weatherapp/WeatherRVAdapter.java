@@ -37,7 +37,7 @@ public class WeatherRVAdapter extends RecyclerView.Adapter<WeatherRVAdapter.View
     @Override
     public void onBindViewHolder(@NonNull WeatherRVAdapter.ViewHolder holder, int position) {
         WeatherRVModal modal =weatherRVModalArrayList.get(position);
-        Picasso.get().load("http"+modal.getIcon()).into(holder.conditionTV);
+        Picasso.get().load("http:"+modal.getIcon()).into(holder.conditionTV);
         holder.temprature.setText(modal.getTemprature()+"°C");
         holder.windTV.setText(modal.getWindSpeed()+ "Km/h");
         SimpleDateFormat input=new SimpleDateFormat("yyyy-mm-dd hh:mm");

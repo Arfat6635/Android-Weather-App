@@ -3,14 +3,18 @@ package com.example.weatherapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Address;
+import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -52,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager;
     private int PERMISSION_CODE=1;
     private String cityName;
+    private String API_KEY="";//paste your API key from www.weatherapi.com
 
 
     @Override
@@ -74,15 +79,20 @@ public class MainActivity extends AppCompatActivity {
         weatherRV.setAdapter(weatherRVAdapter);
 
 
-        locationManager=(LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED)
         {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},PERMISSION_CODE);
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},100);
         }
-        Location location=locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        cityName=getCityName(location.getLongitude(),location.getLongitude());
+
+        //mumbai
+        //cityName=getCityName(19.089984632708717, 72.86950246388896);
+        //Debugging
+        //Log.d("CityName", cityName);
+        cityName=getCityName(19.089984632708717, 72.86950246388896);
         getWeatherinfo(cityName);
+
 
         SearchTV.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,25 +102,26 @@ public class MainActivity extends AppCompatActivity {
                 if (city.isEmpty()){
                  Toast.makeText(MainActivity.this,"Please Enter a Valid city Name!",Toast.LENGTH_SHORT).show();
                 }else{
-                    cityNameTV.setText(cityName);
                     getWeatherinfo(city);
                 }
             }
         });
 
+
     }
 
     //Find CityName
-    private String getCityName(double longitude, double latitude){
-        String cityName="Not found";
+    private String getCityName(double latitude , double longitude){
+        String cityName="";
         Geocoder gcd = new Geocoder(getBaseContext(), Locale.getDefault());
         try {
             List<Address> addressList=gcd.getFromLocation(latitude,longitude,10);
             for (Address adr: addressList) {
                 if (adr != null) {
                     String city=adr.getLocality();
-                    if (city!=null && city.equals("")){
+                    if (city!=null && !city.equals("")){
                         cityName=city;
+                        break;
                     }else{
                         Log.d("TAG","CITY NOT FOUND");
                         Toast.makeText(this, "User city Not found..",Toast.LENGTH_SHORT).show();
@@ -126,8 +137,7 @@ public class MainActivity extends AppCompatActivity {
 
     //City Weather info
     private void getWeatherinfo(String cityName){
-        String url="http://api.weatherapi.com/v1/forecast.json?key=1781d40298a94e12ae9182833220304&q="+cityName+"&days=1&aqi=yes&alerts=yes";
-        cityNameTV.setText(cityName);
+        String url="http://api.weatherapi.com/v1/forecast.json?key="+API_KEY+"&q="+cityName+"&days=1&aqi=yes&alerts=yes";
         RequestQueue requestQueue= Volley.newRequestQueue(MainActivity.this);
 
         JsonObjectRequest jsonObjectRequest=new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -139,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
 
 
                 try {
+                    String cityTemp=cityName.substring(0,1).toUpperCase() + cityName.substring(1).toLowerCase().trim();
+                    cityNameTV.setText(cityTemp);
                     String temprature = response.getJSONObject("current").getString("temp_c");
                     tempratureTV.setText(temprature+"°C");
                     int isDay=response.getJSONObject("current").getInt("is_day");
@@ -178,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Please Enter Valid City Name",Toast.LENGTH_SHORT).show();
             }
         });
-
+        requestQueue.add(jsonObjectRequest);
 
 
     }
@@ -195,4 +207,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 }
